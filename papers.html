@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYQ Archive</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Disable Right Click and Inspect Elements
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if (e.key === 'F12') e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && ['I','J','C','i','j','c'].includes(e.key)) e.preventDefault();
+    if (e.ctrlKey && ['U','u'].includes(e.key)) e.preventDefault();
+  });
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F9F8F6;
+  --surface: #FFFFFF;
+  --border: #E8E5E0;
+  --border-dark: #CFCBC4;
+  --text: #111110;
+  --muted: #888580;
+  --faint: #C5C2BC;
+  --accent: #111110;
+  --accent-inv: #F9F8F6;
+  --radius: 4px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Geist Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.logo-dot { color: var(--faint); }
+
+.logo-year {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.count-chip {
+  font-size: 11px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: 400;
+}
+
+.btn-text {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.btn-text:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+/* ── ADMIN BANNER ── */
+.admin-banner {
+  display: none;
+  background: var(--text);
+  color: var(--accent-inv);
+  padding: 8px 2rem;
+  font-size: 11px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: sticky;
+  top: 52px;
+  z-index: 90;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-banner.show { display: flex; }
+
+.admin-banner button {
+  font-family: 'Geist Mono', monospace;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 2px;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.15s;
+}
+.admin-banner button:hover { background: rgba(255,255,255,0.22); }
+
+/* ── HERO ── */
+.hero {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.hero h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.search-wrap {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--faint);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder { color: var(--faint); }
+.search-input:focus { border-color: var(--text); }
+
+/* ── FILTERS ── */
+.filters-bar {
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  position: sticky;
+  top: 52px;
+  z-index: 89;
+  background: var(--bg);
+}
+
+.admin-banner.show ~ .filters-bar { top: 84px; }
+
+.filters-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 40px;
+}
+
+.filter-tab {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 0 14px;
+  height: 100%;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+.results-label {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ── MAIN ── */
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ── SUBJECT SECTION ── */
+.subject-section { margin-bottom: 3rem; }
+
+.subject-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.subject-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.subject-tally {
+  font-size: 10px;
+  color: var(--faint);
+  letter-spacing: 0.06em;
+}
+
+/* ── PAPER LIST ── */
+.paper-list { display: flex; flex-direction: column; gap: 1px; }
+
+.paper-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  transition: background 0.1s;
+}
+
+.paper-row:last-child { border-bottom: none; }
+
+.paper-row:hover { background: rgba(0,0,0,0.015); margin: 0 -8px; padding: 10px 8px; }
+
+.paper-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.paper-year-badge {
+  font-size: 10px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.paper-title {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paper-actions { display: flex; align-items: center; gap: 6px; }
+
+.btn-action {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.btn-view-sm {
+  background: var(--text);
+  color: var(--accent-inv);
+  border: 1px solid var(--text);
+}
+
+.btn-view-sm:hover { opacity: 0.8; }
+
+.btn-dl {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.btn-dl:hover { border-color: var(--text); color: var(--text); }
+
+.btn-del-row {
+  display: none;
+  background: transparent;
+  color: #c0392b;
+  border: 1px solid rgba(192, 57, 43, 0.3);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.btn-del-row:hover { 
+  background: #FEF0F0;
+  border-color: #c0392b; 
+}
+body.admin-mode .btn-del-row { display: inline-flex; align-items: center; }
+
+/* ── EMPTY ── */
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--faint);
+}
+
+.empty-glyph {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.4;
+}
+
+.empty p {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+/* ── OVERLAYS & MODALS ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 1.5rem 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.modal-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  width: 26px;
+  height: 26px;
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.modal-close:hover { border-color: var(--text); color: var(--text); }
+
+.modal-body { padding: 0 1.5rem 1.5rem; }
+
+.form-group { margin-bottom: 1rem; }
+
+.form-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
+
+input[type=text], input[type=password], select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus {
+  border-color: var(--text);
+  background: var(--surface);
+}
+
+.file-drop {
+  border: 1px dashed var(--border-dark);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  background: var(--bg);
+}
+
+.file-drop:hover { border-color: var(--text); }
+
+.file-drop input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.file-drop-text { font-size: 11px; color: var(--muted); }
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: var(--text);
+  color: var(--accent-inv);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  letter-spacing: 0.04em;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.msg {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  margin-bottom: 1rem;
+  display: none;
+  letter-spacing: 0.02em;
+}
+
+.msg.error { background: #FEF0F0; color: #C0392B; border: 1px solid #FADBD8; display: block; }
+.msg.success { background: #EAFAF1; color: #1E8449; border: 1px solid #D5F5E3; display: block; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 11px;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--text);
+  color: var(--accent-inv);
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  z-index: 999;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-title">PYQ Archive</span>
+      <span class="logo-dot">·</span>
+      <span class="logo-year">IT Dept</span>
+    </div>
+    <div class="header-right" style="display:flex; align-items:center; gap: 1rem;">
+      <button class="btn-text" onclick="openAddPaper()" style="border: 1px solid var(--border); padding: 4px 10px; border-radius: var(--radius); color: var(--text);">+ Contribute</button>
+      <span class="count-chip" id="total-count">0 papers</span>
+      <button class="btn-text" onclick="openAdmin()">Admin</button>
+    </div>
+  </div>
+</header>
+
+<div class="admin-banner" id="admin-banner">
+  <span>Admin mode active</span>
+  <button onclick="openAddPaper()">+ Add Paper</button>
+  <button onclick="logoutAdmin()">Logout</button>
+</div>
+
+<div class="hero">
+  <p class="hero-label">IT Department (Only) • Repository</p>
+  <h1>Previous Year<br><em>Question Papers</em></h1>
+  <div class="search-wrap">
+    <span class="search-prefix">⌕</span>
+    <input class="search-input" type="text" id="search-input" placeholder="Search papers, subjects…" oninput="renderPapers()" autocomplete="off" spellcheck="false">
+  </div>
+</div>
+
+<div class="filters-bar" id="filters-bar">
+  <div class="filters-inner">
+    <div id="year-filters" style="display:flex; gap: 4px;"></div>
+    <div style="width:1px; height:20px; background:var(--border); margin:0 1rem;"></div>
+    <div id="type-filters" style="display:flex; gap: 4px;"></div>
+    <span class="results-label" id="results-count"></span>
+  </div>
+</div>
+
+<main id="main-content"></main>
+
+<footer>PYQ Archive — Information Technology (IT) Department</footer>
+<div class="toast" id="toast"></div>
+
+<!-- Login Modal -->
+<div class="overlay" id="login-modal">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-header">
+      <span class="modal-title">Admin Login</span>
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="login-msg"></div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="admin-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Authenticate →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Paper Modal -->
+<div class="overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Paper</span>
+      <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="add-msg"></div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:2px;">Subject Name</label>
+        <span style="display:block; font-size:10px; color:var(--muted); margin-bottom:6px; letter-spacing:0;">Note: Please write the short form first, followed by the full name.</span>
+        <input type="text" id="f-subject" placeholder="e.g. DSA - Data Structures and Algorithms">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Optional File Name</label>
+        <input type="text" id="f-filename" placeholder="Leave empty for original">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select id="f-type">
+          <option value="Paper">Paper</option>
+          <option value="Study Material">Study Material</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex; gap:1rem;">
+        <div style="flex:1;">
+          <label class="form-label">Year</label>
+          <select id="f-year">
+            <option value="SE">SE</option>
+            <option value="TE">TE</option>
+            <option value="BE">BE</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label class="form-label">Semester</label>
+          <select id="f-sem">
+            <option value="3">Sem 3</option>
+            <option value="4">Sem 4</option>
+            <option value="5">Sem 5</option>
+            <option value="6">Sem 6</option>
+            <option value="7">Sem 7</option>
+            <option value="8">Sem 8</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:2px;">Files (PDF / DOC)</label>
+        <span style="display:block; font-size:10px; color:var(--muted); margin-bottom:6px; letter-spacing:0;">Note: Max 5MB per file. Please compress larger PDFs first.</span>
+        <div class="file-drop">
+          <input type="file" id="f-file" accept=".pdf,.doc,.docx" multiple
+            onchange="document.getElementById('drop-text').innerHTML='<strong>'+this.files.length+' file(s) selected</strong>'">
+          <div id="drop-text" class="file-drop-text">Click or drag files here</div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addPaper()" id="btn-add">Upload to Database →</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ══════════════════════════════════════════════
+// CONFIGURATION — Loaded from .env via Vite
+// ══════════════════════════════════════════════
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+const ADMIN_PASS   = import.meta.env.VITE_ADMIN_PASS;
+
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let PAPERS = [];
+let isAdmin = false;
+let activeYear = 'All';
+const YEARS = ['All', 'SE', 'TE', 'BE'];
+let activeType = 'All';
+const TYPES = ['All', 'Paper', 'Study Material'];
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  buildFilters();
+  fetchPapers();
+});
+
+// ── FETCH ──
+async function fetchPapers() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="empty"><p>Loading…</p></div>';
+
+  const { data, error } = await _sb
+    .from('papers')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    main.innerHTML = `<div class="empty">
+      <div class="empty-glyph">⚠</div>
+      <p>Database error — check Supabase config</p>
+    </div>`;
+    console.error(error);
+    return;
+  }
+
+  PAPERS = data || [];
+  renderPapers();
+}
+
+// ── FILTERS ──
+function buildFilters() {
+  document.getElementById('year-filters').innerHTML = YEARS.map(y =>
+    `<button class="filter-tab ${y === activeYear ? 'active' : ''}" onclick="setFilter('${y}')">${y}</button>`
+  ).join('');
+  document.getElementById('type-filters').innerHTML = TYPES.map(t =>
+    `<button class="filter-tab ${t === activeType ? 'active' : ''}" onclick="setTypeFilter('${t}')">${t}</button>`
+  ).join('');
+}
+
+function setFilter(val) {
+  activeYear = val;
+  buildFilters();
+  renderPapers();
+}
+
+function setTypeFilter(val) {
+  activeType = val;
+  buildFilters();
+  renderPapers();
+}
+
+// ── RENDER ──
+function renderPapers() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+
+  const filtered = PAPERS.filter(p => {
+    if (activeYear !== 'All' && p.year !== activeYear) return false;
+    if (activeType !== 'All' && (p.type || 'Paper') !== activeType) return false;
+    if (q && !`${p.title} ${p.subject} ${p.year} ${p.type || 'Paper'}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById('total-count').textContent = PAPERS.length + ' papers';
+  document.getElementById('results-count').textContent = filtered.length + ' shown';
+
+  const main = document.getElementById('main-content');
+
+  if (!filtered.length) {
+    main.innerHTML = `<div class="empty">
+      <div class="empty-glyph">∅</div>
+      <p>No papers found</p>
+    </div>`;
+    return;
+  }
+
+  // Group by subject
+  const groups = {};
+  filtered.forEach(p => {
+    const k = p.subject || 'Miscellaneous';
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(p);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(subj => {
+    const papers = groups[subj];
+    html += `<div class="subject-section">
+      <div class="subject-header">
+        <span class="subject-name">${esc(subj)}</span>
+        <span class="subject-tally">${papers.length} paper${papers.length > 1 ? 's' : ''}</span>
+      </div>
+      <div class="paper-list">
+        ${papers.map(p => rowHTML(p)).join('')}
+      </div>
+    </div>`;
+  });
+
+  main.innerHTML = html;
+}
+
+function rowHTML(p) {
+  const fileLink = p.file_data || p.file_url || '#';
+  const docType = p.type || 'Paper';
+  return `<div class="paper-row">
+    <div class="paper-info">
+      <span class="paper-year-badge">${esc(p.year)}</span>
+      ${p.semester ? `<span class="paper-year-badge">Sem ${esc(p.semester)}</span>` : ''}
+      <span class="paper-year-badge" style="border-style:dashed; color:var(--text);">${esc(docType)}</span>
+      <span class="paper-title" title="${esc(p.title)}">${esc(p.title)}</span>
+    </div>
+    <div class="paper-actions">
+      <a class="btn-action btn-view-sm" onclick="viewFile('${p.id}')" style="cursor:pointer">View</a>
+      <a class="btn-action btn-dl" href="${fileLink}" download="${esc(p.title)}" title="Download">↓</a>
+      <button class="btn-del-row" onclick="deletePaper('${p.id}')" title="Delete">Delete</button>
+    </div>
+  </div>`;
+}
+
+function viewFile(id) {
+  const p = PAPERS.find(x => x.id === id);
+  if (!p) return;
+  const fileLink = p.file_data || p.file_url;
+  if (!fileLink) return;
+
+  if (!fileLink.startsWith('data:')) {
+    window.open(fileLink, '_blank');
+    return;
+  }
+
+  try {
+    const arr = fileLink.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const blob = new Blob([u8arr], { type: mime });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  } catch(e) {
+    console.error("Error viewing file", e);
+    alert("Could not view file.");
+  }
+}
+
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── ADMIN ──
+function openAdmin() {
+  if (isAdmin) { showToast('Already in admin mode'); return; }
+  document.getElementById('admin-pass').value = '';
+  document.getElementById('login-msg').innerHTML = '';
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('admin-pass').focus(), 100);
+}
+
+function doLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass === ADMIN_PASS) {
+    isAdmin = true;
+    document.body.classList.add('admin-mode');
+    document.getElementById('admin-banner').classList.add('show');
+    closeModal('login-modal');
+    showToast('Admin mode active');
+  } else {
+    document.getElementById('login-msg').innerHTML =
+      '<div class="msg error">Incorrect password</div>';
+  }
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  document.body.classList.remove('admin-mode');
+  document.getElementById('admin-banner').classList.remove('show');
+  showToast('Logged out');
+}
+
+function openAddPaper() {
+  document.getElementById('f-subject').value = '';
+  document.getElementById('f-filename').value = '';
+  document.getElementById('f-type').value = 'Paper';
+  document.getElementById('f-year').value = 'SE';
+  document.getElementById('f-sem').value = '3';
+  document.getElementById('f-file').value = '';
+  document.getElementById('drop-text').innerHTML = 'Click or drag files here';
+  document.getElementById('add-msg').innerHTML = '';
+  document.getElementById('add-modal').classList.add('open');
+}
+
+async function addPaper() {
+  const subject  = document.getElementById('f-subject').value.trim() || 'Miscellaneous';
+  const cName    = document.getElementById('f-filename').value.trim();
+  const fileType = document.getElementById('f-type').value;
+  const yearVal  = document.getElementById('f-year').value;
+  const semVal   = document.getElementById('f-sem').value;
+  const files    = document.getElementById('f-file').files;
+  const msg      = document.getElementById('add-msg');
+  const btn      = document.getElementById('btn-add');
+
+  if (!files.length) {
+    msg.innerHTML = '<div class="msg error">Please select at least one file</div>';
+    return;
+  }
+
+  btn.textContent = `Uploading ${files.length} file(s)…`;
+  btn.disabled = true;
+  msg.innerHTML = '';
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file  = files[i];
+      let title = file.name.replace(/\.[^/.]+$/, '') || file.name;
+      if (cName) {
+        title = files.length > 1 ? `${cName} (${i + 1})` : cName;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error(`Upload failed: "${file.name}" is larger than 5MB. Please compress it first.`);
+      }
+
+      const ext   = file.name.split('.').pop();
+      const fname = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: upErr } = await _sb.storage.from('pdfs').upload(fname, file);
+      if (upErr) throw new Error(`Upload failed (${file.name}): ${upErr.message}`);
+
+      const { data: urlData } = _sb.storage.from('pdfs').getPublicUrl(fname);
+
+      const { error: dbErr } = await _sb.from('papers').insert([{
+        title,
+        subject,
+        year: yearVal,
+        semester: semVal,
+        type: fileType,
+        file_url: urlData.publicUrl
+      }]);
+
+      if (dbErr) throw new Error(`DB insert failed (${file.name}): ${dbErr.message}`);
+    }
+
+    showToast(`${files.length} paper(s) uploaded`);
+    closeModal('add-modal');
+    fetchPapers();
+  } catch (e) {
+    msg.innerHTML = `<div class="msg error">${e.message}</div>`;
+  } finally {
+    btn.textContent = 'Upload to Database →';
+    btn.disabled = false;
+  }
+}
+
+async function deletePaper(id) {
+  if (!confirm('Delete this paper permanently?')) return;
+
+  const p = PAPERS.find(x => x.id === id);
+
+  const { error } = await _sb.from('papers').delete().eq('id', id);
+  if (error) { showToast('Delete failed'); return; }
+
+  if (p && p.file_url) {
+    try {
+      const fname = new URL(p.file_url).pathname.split('/').pop();
+      await _sb.storage.from('pdfs').remove([fname]);
+    } catch (e) {
+      console.warn('Storage delete failed', e);
+    }
+  }
+
+  showToast('Paper deleted');
+  fetchPapers();
+}
+
+// ── HELPERS ──
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.classList.remove('open');
+  });
+});
+
+let _toastTimer;
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Expose functions globally for HTML inline handlers since this is a module now
+Object.assign(window, { openAdmin, doLogin, logoutAdmin, openAddPaper, addPaper, closeModal, setFilter, setTypeFilter, deletePaper, viewFile, renderPapers });
+</script>
+</body>
+</html>
