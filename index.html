@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PYQ Archive</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -580,9 +581,14 @@ footer {
 </header>
 
 <div class="admin-banner" id="admin-banner">
-  <span>Admin mode active</span>
-  <button onclick="openAddPaper()">+ Add Paper</button>
-  <button onclick="logoutAdmin()">Logout</button>
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <span>Admin mode active</span>
+    <img src="https://hits.sh/paperarchive.vercel.app.svg?label=Site%20Views&color=111110&labelColor=F9F8F6" alt="Site Views" style="height: 20px; border-radius: 2px;">
+  </div>
+  <div style="display:flex; align-items:center; gap:0.5rem;">
+    <button onclick="openAddPaper()">+ Add Paper</button>
+    <button onclick="logoutAdmin()">Logout</button>
+  </div>
 </div>
 
 <div class="hero">
@@ -591,6 +597,15 @@ footer {
   <div class="search-wrap">
     <span class="search-prefix">⌕</span>
     <input class="search-input" type="text" id="search-input" placeholder="Search papers, subjects…" oninput="renderPapers()" autocomplete="off" spellcheck="false">
+  </div>
+
+  <div style="margin-top: 2rem; background: var(--surface); border: 1px dashed var(--border-dark); padding: 1.5rem; border-radius: var(--radius); text-align: center;">
+    <h3 style="font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 400; margin-bottom: 0.5rem; color: var(--text);">Help Your Juniors! 🤝</h3>
+    <p style="color: var(--muted); font-size: 12px; margin-bottom: 1rem;">Have previous year papers or study materials? Contribute to the archive and share the link with your classmates.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <button onclick="openAddPaper()" style="background: var(--text); color: var(--accent-inv); border: none; padding: 8px 16px; border-radius: var(--radius); font-family: 'Geist Mono', monospace; font-size: 11px; cursor: pointer; transition: opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">+ Contribute Material</button>
+      <button onclick="navigator.clipboard.writeText('https://paperarchive.vercel.app'); showToast('Link copied to clipboard!');" style="background: transparent; color: var(--text); border: 1px solid var(--border-dark); padding: 8px 16px; border-radius: var(--radius); font-family: 'Geist Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s;" onmouseover="this.style.borderColor='var(--text)'" onmouseout="this.style.borderColor='var(--border-dark)'">🔗 Share Website</button>
+    </div>
   </div>
 </div>
 
