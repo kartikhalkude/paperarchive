@@ -814,11 +814,25 @@ function rowHTML(p) {
       <span class="paper-title" title="${esc(p.title)}">${esc(p.title)}</span>
     </div>
     <div class="paper-actions">
+      ${isAdmin ? `<span id="view-count-${p.id}" style="font-size:10px; color:var(--muted); margin-right:8px;" title="Total Views & Downloads">👁 ${p.views || 0}</span>` : ''}
       <a class="btn-action btn-view-sm" onclick="viewFile('${p.id}')" style="cursor:pointer">View</a>
-      <a class="btn-action btn-dl" href="${fileLink}" download="${esc(p.title)}" title="Download">↓</a>
+      <a class="btn-action btn-dl" href="${fileLink}" download="${esc(p.title)}" title="Download" onclick="incrementViews('${p.id}')">↓</a>
       <button class="btn-del-row" onclick="deletePaper('${p.id}')" title="Delete">Delete</button>
     </div>
   </div>`;
+}
+
+function incrementViews(id) {
+  const p = PAPERS.find(x => x.id === id);
+  if (!p) return;
+  p.views = (p.views || 0) + 1;
+  _sb.from('papers').update({ views: p.views }).eq('id', id).then(() => {
+    if (isAdmin) {
+      const sp = document.getElementById('view-count-' + id);
+      if (sp) sp.textContent = '👁 ' + p.views;
+      else renderPapers();
+    }
+  });
 }
 
 function viewFile(id) {
@@ -826,6 +840,8 @@ function viewFile(id) {
   if (!p) return;
   const fileLink = p.file_data || p.file_url;
   if (!fileLink) return;
+
+  incrementViews(id);
 
   if (!fileLink.startsWith('data:')) {
     window.open(fileLink, '_blank');
@@ -877,6 +893,7 @@ function doLogin() {
     document.getElementById('admin-banner').classList.add('show');
     closeModal('login-modal');
     showToast('Admin mode active');
+    renderPapers();
   } else {
     document.getElementById('login-msg').innerHTML =
       '<div class="msg error">Incorrect password</div>';
@@ -1006,7 +1023,7 @@ function showToast(m) {
 }
 
 // Expose functions globally for HTML inline handlers since this is a module now
-Object.assign(window, { openAdmin, doLogin, logoutAdmin, openAddPaper, addPaper, closeModal, setFilter, setTypeFilter, deletePaper, viewFile, renderPapers });
+Object.assign(window, { openAdmin, doLogin, logoutAdmin, openAddPaper, addPaper, closeModal, setFilter, setTypeFilter, deletePaper, viewFile, renderPapers, incrementViews });
 </script>
 </body>
 </html>
