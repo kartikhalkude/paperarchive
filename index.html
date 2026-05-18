@@ -581,14 +581,9 @@ footer {
 </header>
 
 <div class="admin-banner" id="admin-banner">
-  <div style="display:flex; align-items:center; gap:1rem;">
-    <span>Admin mode active</span>
-    <img src="https://hits.sh/paperarchive.vercel.app.svg?label=Site%20Views&color=111110&labelColor=F9F8F6" alt="Site Views" style="height: 20px; border-radius: 2px;">
-  </div>
-  <div style="display:flex; align-items:center; gap:0.5rem;">
-    <button onclick="openAddPaper()">+ Add Paper</button>
-    <button onclick="logoutAdmin()">Logout</button>
-  </div>
+  <span>Admin mode active</span>
+  <button onclick="openAddPaper()">+ Add Paper</button>
+  <button onclick="logoutAdmin()">Logout</button>
 </div>
 
 <div class="hero">
@@ -620,7 +615,10 @@ footer {
 
 <main id="main-content"></main>
 
-<footer>PYQ Archive — Information Technology (IT) Department</footer>
+<footer style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+  <div>PYQ Archive — Information Technology (IT) Department</div>
+  <a href="https://hits.sh/paperarchive.vercel.app/"><img alt="Hits" src="https://hits.sh/paperarchive.vercel.app.svg?label=Website%20Visits&color=111110&labelColor=F9F8F6"/></a>
+</footer>
 <div class="toast" id="toast"></div>
 
 <!-- Login Modal -->
