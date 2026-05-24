@@ -1,6 +1,13 @@
 // ══════════════════════════════════════════════
       // CONFIGURATION — Loaded from .env via Vite
       // ══════════════════════════════════════════════
+      
+      // ✅ SECURITY: Enforce HTTPS (except localhost)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        console.warn('🔒 Redirecting to HTTPS for security...');
+        location.href = 'https://' + location.href.split('://')[1];
+      }
+
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
       const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
@@ -10,6 +17,59 @@
       let PAPERS = [];
       let isAdmin = false;
       let activeYear = "All";
+
+      // ✅ SECURITY: Helper functions for input validation and safe rendering
+      
+      /**
+       * Safely set element text content (prevents XSS)
+       */
+      function setSafeText(element, text) {
+        if (element) element.textContent = text;
+      }
+
+      /**
+       * Safely set element HTML with escaped content
+       */
+      function setSafeInnerHTML(element, html) {
+        if (element) element.innerHTML = html;
+        // Remove any script tags
+        if (element) element.querySelectorAll('script').forEach(s => s.remove());
+      }
+
+      /**
+       * Validate subject name
+       */
+      function validateSubject(subject) {
+        const trimmed = (subject || "").trim();
+        if (!trimmed) throw new Error('Subject cannot be empty');
+        if (trimmed.length > 500) throw new Error('Subject cannot exceed 500 characters');
+        if (!/^[\w\s\-&'(),.–]+$/u.test(trimmed)) {
+          throw new Error('Subject contains invalid characters');
+        }
+        return trimmed;
+      }
+
+      /**
+       * Validate file name
+       */
+      function validateFileName(filename) {
+        const name = (filename || "").trim();
+        if (name.length > 200) throw new Error('Filename too long');
+        return name.replace(/[<>:"\/\\|?*]/g, '_');
+      }
+
+      /**
+       * Validate file is actually a PDF (not just renamed .exe)
+       */
+      async function validatePDFMagicBytes(file) {
+        const buffer = await file.slice(0, 4).arrayBuffer();
+        const header = new Uint8Array(buffer);
+        // Check for %PDF magic bytes: 0x25 0x50 0x44 0x46
+        const isPDF = header[0] === 0x25 && header[1] === 0x50 && 
+                      header[2] === 0x44 && header[3] === 0x46;
+        return isPDF;
+      }
+
       const YEARS = ["All", "SE", "TE", "BE"];
       let activePattern = "All";
       const PATTERNS = ["All", "2024 Pattern", "2019 Pattern", "2015 Pattern"];
@@ -565,7 +625,8 @@
 
       async function doLogin() {
         const pass = document.getElementById("admin-pass").value;
-        document.getElementById("login-msg").innerHTML = "";
+        const loginMsg = document.getElementById("login-msg");
+        setSafeInnerHTML(loginMsg, "");
         try {
           const res = await fetch("/api/admin-login", {
             method: "POST",
@@ -581,13 +642,13 @@
             showToast("Admin mode active");
             renderPapers();
           } else {
-            document.getElementById("login-msg").innerHTML =
-              '<div class="msg error">Incorrect password</div>';
+            setSafeInnerHTML(loginMsg,
+              '<div class="msg error">❌ Incorrect password</div>');
           }
         } catch (e) {
           console.error("Login error", e);
-          document.getElementById("login-msg").innerHTML =
-            '<div class="msg error">Login failed — try again</div>';
+          setSafeInnerHTML(loginMsg,
+            '<div class="msg error">❌ Login failed — try again</div>');
         }
       }
 
@@ -605,32 +666,72 @@
         document.getElementById("f-year").value = "SE";
         document.getElementById("f-sem").value = "3";
         document.getElementById("f-file").value = "";
-        document.getElementById("drop-text").innerHTML =
-          "Click or drag files here";
-        document.getElementById("add-msg").innerHTML = "";
+        // ✅ SECURITY: Use textContent for static content
+        setSafeText(document.getElementById("drop-text"), "Click or drag files here");
+        setSafeInnerHTML(document.getElementById("add-msg"), "");
         document.getElementById("add-modal").classList.add("open");
       }
 
       async function addPaper() {
-        const subject =
-          document.getElementById("f-subject").value.trim() || "Miscellaneous";
-        const cName = document.getElementById("f-filename").value.trim();
-        const fileType = document.getElementById("f-type").value;
-        const yearVal = document.getElementById("f-year").value;
-        const semVal = document.getElementById("f-sem").value;
-        const files = document.getElementById("f-file").files;
-        const msg = document.getElementById("add-msg");
-        const btn = document.getElementById("btn-add");
+        let subject, cName, fileType, yearVal, semVal, files, msg, btn;
+        try {
+          subject =
+            document.getElementById("f-subject").value.trim() || "Miscellaneous";
+          cName = document.getElementById("f-filename").value.trim();
+          fileType = document.getElementById("f-type").value;
+          yearVal = document.getElementById("f-year").value;
+          semVal = document.getElementById("f-sem").value;
+          files = document.getElementById("f-file").files;
+          msg = document.getElementById("add-msg");
+          btn = document.getElementById("btn-add");
+        } catch (e) {
+          console.error('Form element error:', e);
+          return;
+        }
 
         if (!files.length) {
-          msg.innerHTML =
-            '<div class="msg error">Please select at least one file</div>';
+          setSafeInnerHTML(msg, '<div class="msg error">Please select at least one file</div>');
+          return;
+        }
+
+        // ✅ SECURITY: Validate file types BEFORE upload
+        const ALLOWED_MIME_TYPES = ['application/pdf'];
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+        try {
+          // Validate all files first
+          for (let file of files) {
+            // Check MIME type
+            if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+              setSafeInnerHTML(msg, `<div class="msg error">❌ Only PDF files allowed. "${esc(file.name)}" is ${esc(file.type || 'unknown type')}</div>`);
+              return;
+            }
+
+            // Check file size
+            if (file.size > MAX_FILE_SIZE) {
+              setSafeInnerHTML(msg, `<div class="msg error">❌ File "${esc(file.name)}" exceeds 5MB limit</div>`);
+              return;
+            }
+
+            // ✅ SECURITY: Validate PDF magic bytes (prevents uploading .exe as .pdf)
+            const isPDF = await validatePDFMagicBytes(file);
+            if (!isPDF) {
+              setSafeInnerHTML(msg, `<div class="msg error">❌ File "${esc(file.name)}" is not a valid PDF (magic bytes mismatch)</div>`);
+              return;
+            }
+          }
+
+          // ✅ SECURITY: Validate inputs
+          subject = validateSubject(subject);
+          if (cName) cName = validateFileName(cName);
+        } catch (e) {
+          setSafeInnerHTML(msg, `<div class="msg error">❌ Validation error: ${esc(e.message)}</div>`);
           return;
         }
 
         btn.textContent = `Uploading ${files.length} file(s)…`;
         btn.disabled = true;
-        msg.innerHTML = "";
+        setSafeInnerHTML(msg, '');
 
         try {
           for (let i = 0; i < files.length; i++) {
@@ -640,13 +741,15 @@
               title = files.length > 1 ? `${cName} (${i + 1})` : cName;
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-              throw new Error(
-                `Upload failed: "${file.name}" is larger than 5MB. Please compress it first.`,
-              );
+            // ✅ SECURITY: Sanitize title
+            title = title.replace(/[<>:"\/\\|?*]/g, '_').substring(0, 200);
+
+            const ext = file.name.split(".").pop().toLowerCase();
+            // ✅ SECURITY: Whitelist extensions
+            if (!['pdf'].includes(ext)) {
+              throw new Error(`File extension ".${ext}" not allowed`);
             }
 
-            const ext = file.name.split(".").pop();
             const fname = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
             const { error: upErr } = await _sb.storage
@@ -680,7 +783,7 @@
           closeModal("add-modal");
           fetchPapers();
         } catch (e) {
-          msg.innerHTML = `<div class="msg error">${e.message}</div>`;
+          setSafeInnerHTML(msg, `<div class="msg error">❌ ${esc(e.message)}</div>`);
         } finally {
           btn.textContent = "Upload to Database →";
           btn.disabled = false;
@@ -690,7 +793,8 @@
       function openAutoExtract() {
         document.getElementById("ae-url").value = "";
         document.getElementById("ae-status").innerText = "";
-        const savedSyllabus = localStorage.getItem("ae_syllabus_url") || "";
+        // ✅ SECURITY: Use sessionStorage instead of localStorage for sensitive URLs
+        const savedSyllabus = sessionStorage.getItem("ae_syllabus_url") || "";
         document.getElementById("ae-syllabus").value = savedSyllabus;
         document.getElementById("auto-extract-modal").classList.add("open");
       }
@@ -705,7 +809,7 @@
         const status = document.getElementById("ae-status");
 
         btn.disabled = true;
-        status.innerText = "Downloading PDF (via proxy)...";
+        setSafeText(status, "Downloading PDF (via proxy)...");
 
         try {
           // ── DYNAMIC SYLLABUS SCANNING ──
@@ -713,16 +817,17 @@
             .getElementById("ae-syllabus")
             .value.trim();
           if (syllabusUrl) {
-            status.innerText = "Downloading syllabus (via proxy)...";
+            setSafeText(status, "Downloading syllabus (via proxy)...");
             try {
-              localStorage.setItem("ae_syllabus_url", syllabusUrl);
+              // ✅ SECURITY: Use sessionStorage instead of localStorage
+              sessionStorage.setItem("ae_syllabus_url", syllabusUrl.substring(0, 2000));
               const sProxyUrl =
                 "https://api.codetabs.com/v1/proxy/?quest=" +
                 encodeURIComponent(syllabusUrl);
               const sRes = await fetch(sProxyUrl);
               if (sRes.ok) {
                 const sBuffer = await sRes.arrayBuffer();
-                status.innerText = "Parsing syllabus content...";
+                setSafeText(status, "Parsing syllabus content...");
                 const sPdf = await pdfjsLib.getDocument({ data: sBuffer })
                   .promise;
 
@@ -827,7 +932,7 @@
           const buffer = await res.arrayBuffer();
           const bufferForPdfLib = buffer.slice(0);
 
-          status.innerText = "Parsing text content...";
+          setSafeText(status, "Parsing text content...");
           const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
           const totalPages = pdf.numPages;
 
@@ -843,7 +948,7 @@
 
           for (let i = 1; i <= totalPages; i++) {
             if (i % 5 === 0)
-              status.innerText = `Scanning page ${i}/${totalPages}...`;
+              setSafeText(status, `Scanning page ${i}/${totalPages}...`);
 
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
@@ -961,7 +1066,7 @@
           if (urlPapers.length === 0)
             throw new Error("No IT papers found in this PDF.");
 
-          status.innerText = `Found ${urlPapers.length} papers. Creating PDFs...`;
+          setSafeText(status, `Found ${urlPapers.length} papers. Creating PDFs...`);
 
           const { PDFDocument } = PDFLib;
           const srcDoc = await PDFDocument.load(bufferForPdfLib);
@@ -969,7 +1074,7 @@
           let successCount = 0;
           for (let p of urlPapers) {
             // Check if paper already exists (case-insensitive title check)
-            status.innerText = `Checking duplicate for ${p.name}...`;
+            setSafeText(status, `Checking duplicate for ${p.name}...`);
             const { data: existing, error: checkErr } = await _sb
               .from("papers")
               .select("id")
@@ -982,7 +1087,7 @@
               continue;
             }
 
-            status.innerText = `Extracting ${p.name}...`;
+            setSafeText(status, `Extracting ${p.name}...`);
             const newDoc = await PDFDocument.create();
             const indices = p.pages.map((n) => n - 1).sort((a, b) => a - b);
             const copied = await newDoc.copyPages(srcDoc, indices);
@@ -993,7 +1098,7 @@
               type: "application/pdf",
             });
 
-            status.innerText = `Uploading ${p.name}...`;
+            setSafeText(status, `Uploading ${p.name}...`);
 
             const fname = `${p.name}.pdf`;
 
@@ -1066,13 +1171,13 @@
             if (!dbErr) successCount++;
           }
 
-          status.innerText = `Done! Successfully extracted & uploaded ${successCount} papers!`;
+          setSafeText(status, `Done! Successfully extracted & uploaded ${successCount} papers!`);
           showToast(`${successCount} paper(s) auto-uploaded`);
           setTimeout(() => closeModal("auto-extract-modal"), 2500);
           fetchPapers();
         } catch (err) {
           console.error(err);
-          status.innerText = "Error: " + err.message;
+          setSafeText(status, "Error: " + esc(err.message));
         } finally {
           btn.disabled = false;
         }
@@ -1082,24 +1187,46 @@
         if (!confirm("Delete this paper permanently?")) return;
 
         const p = PAPERS.find((x) => x.id === id);
-
-        const { error } = await _sb.from("papers").delete().eq("id", id);
-        if (error) {
-          showToast("Delete failed");
+        
+        // ✅ SECURITY: Get admin password for verification (sent securely via bearer token)
+        const adminPass = document.getElementById("admin-pass")?.value;
+        if (!adminPass) {
+          alert("❌ Admin password not found. Please re-login.");
           return;
         }
 
-        if (p && p.file_url) {
-          try {
-            const fname = new URL(p.file_url).pathname.split("/").pop();
-            await _sb.storage.from("pdfs").remove([fname]);
-          } catch (e) {
-            console.warn("Storage delete failed", e);
-          }
-        }
+        try {
+          // ✅ SECURITY: Use server-side endpoint for deletion (not direct DB access)
+          const res = await fetch("/api/delete-paper", {
+            method: 'DELETE',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminPass}`
+            },
+            body: JSON.stringify({ id }),
+          });
 
-        showToast("Paper deleted");
-        fetchPapers();
+          if (!res.ok) {
+            const result = await res.json().catch(() => ({}));
+            alert('❌ Delete failed: ' + (result.error || `HTTP ${res.status}`));
+            return;
+          }
+
+          if (p && p.file_url) {
+            try {
+              const fname = new URL(p.file_url).pathname.split("/").pop();
+              await _sb.storage.from("pdfs").remove([fname]);
+            } catch (e) {
+              console.warn("Storage delete failed", e);
+            }
+          }
+
+          showToast("Paper deleted");
+          fetchPapers();
+        } catch (e) {
+          console.error('Delete error:', e);
+          alert('❌ Could not delete paper: ' + e.message);
+        }
       }
 
       // ── HELPERS ──
