@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Primary Meta Tags -->
-    <title>SPPU PYQ Archive - Previous Year Question Papers for BE IT Engineering</title>
-    <meta name="title" content="SPPU PYQ Archive - Previous Year Question Papers for BE IT Engineering" />
-    <meta name="description" content="Free archive of SPPU (Savitribai Phule Pune University) previous year question papers for Information Technology (IT) engineering BE, SE, TE. Download PDFs, study materials, and exam preparation resources." />
-    <meta name="keywords" content="SPPU PYQ, previous year questions, BE IT SPPU, exam papers, engineering question papers, information technology, SPPU papers download, study materials" />
+    <title>SPPU BE IT Previous Year Question Papers (PYQs) | Archive</title>
+    <meta name="title" content="SPPU BE IT Previous Year Question Papers (PYQs) | Archive" />
+    <meta name="description" content="Free archive of SPPU BE IT previous year question papers and PYQs for Information Technology engineering. Download PDFs, study materials, and exam prep resources." />
+    <meta name="keywords" content="SPPU BE IT previous year question papers, SPPU BE IT PYQs, SPPU PYQ, previous year questions, BE IT SPPU, exam papers, engineering question papers, information technology, SPPU papers download" />
     <meta name="author" content="SPPU IT Department Community" />
     <meta name="robots" content="index, follow" />
     <meta name="language" content="English" />
@@ -18,8 +18,8 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://paperarchive.vercel.app/" />
-    <meta property="og:title" content="SPPU PYQ Archive - Previous Year Question Papers" />
-    <meta property="og:description" content="Complete archive of SPPU previous year questions for BE IT engineering. Free download of exam papers, study materials, and question banks." />
+    <meta property="og:title" content="SPPU BE IT Previous Year Question Papers (PYQs)" />
+    <meta property="og:description" content="Complete archive of SPPU BE IT previous year question papers and PYQs. Free download of exam papers and study materials." />
     <meta property="og:image" content="https://paperarchive.vercel.app/og-image.png" />
     <meta property="og:site_name" content="SPPU PYQ Archive" />
     <meta property="og:locale" content="en_US" />
@@ -27,9 +27,8 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://paperarchive.vercel.app/" />
-    <meta property="twitter:title" content="SPPU PYQ Archive - BE IT Previous Year Questions" />
-    <meta property="twitter:description" content="Free SPPU question papers and study materials for information technology engineering." />
-    <meta property="twitter:image" content="https://paperarchive.vercel.app/og-image.png" />
+    <meta property="twitter:title" content="SPPU BE IT Previous Year Question Papers (PYQs)" />
+    <meta property="twitter:description" content="Complete archive of SPPU BE IT previous year question papers and PYQs. Free download of exam papers and study materials." />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://paperarchive.vercel.app/" />
@@ -62,9 +61,9 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "SPPU PYQ Archive",
+      "name": "SPPU BE IT PYQ Archive",
       "url": "https://paperarchive.vercel.app",
-      "description": "Complete archive of SPPU previous year question papers for BE IT engineering",
+      "description": "Complete archive of SPPU previous year question papers and PYQs for BE IT engineering",
       "creator": {
         "@type": "Organization",
         "name": "SPPU IT Department Community",
@@ -85,8 +84,8 @@
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "SPPU PYQ Archive - Previous Year Question Papers",
-      "description": "Archive of SPPU previous year questions for Information Technology (BE, SE, TE)",
+      "name": "SPPU BE IT Previous Year Question Papers (PYQs)",
+      "description": "Archive of SPPU BE IT previous year question papers and PYQs for Information Technology engineering",
       "url": "https://paperarchive.vercel.app",
       "publisher": {
         "@type": "Organization",
@@ -99,24 +98,12 @@
       "isAccessibleForFree": true,
       "mainEntity": {
         "@type": "EducationalResourceCollection",
-        "name": "SPPU IT Engineering Question Papers",
-        "description": "Complete collection of previous year question papers, study materials, and exam papers from Savitribai Phule Pune University for Information Technology program"
+        "name": "SPPU BE IT Engineering Question Papers",
+        "description": "Complete collection of previous year question papers, PYQs, study materials, and exam papers from Savitribai Phule Pune University for BE Information Technology program"
       }
     }
     </script>
-      // Disable Right Click and Inspect Elements
-      document.addEventListener("contextmenu", (e) => e.preventDefault());
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "F12") e.preventDefault();
-        if (
-          e.ctrlKey &&
-          e.shiftKey &&
-          ["I", "J", "C", "i", "j", "c"].includes(e.key)
-        )
-          e.preventDefault();
-        if (e.ctrlKey && ["U", "u"].includes(e.key)) e.preventDefault();
-      });
-    </script>
+
     <style>
       *,
       *::before,
@@ -837,8 +824,8 @@
     </div>
 
     <div class="hero">
-      <p class="hero-label">IT Department (Only) • Repository</p>
-      <h1>Previous Year<br /><em>Question Papers</em></h1>
+      <p class="hero-label">SPPU IT Department • Repository</p>
+      <h1>SPPU BE IT<br /><em>Previous Year PYQs</em></h1>
       <div class="search-wrap">
         <span class="search-prefix">⌕</span>
         <input
@@ -1197,7 +1184,6 @@
       // ══════════════════════════════════════════════
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
       const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
-      const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS;
 
       const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -1579,18 +1565,31 @@
         setTimeout(() => document.getElementById("admin-pass").focus(), 100);
       }
 
-      function doLogin() {
+      async function doLogin() {
         const pass = document.getElementById("admin-pass").value;
-        if (pass === ADMIN_PASS) {
-          isAdmin = true;
-          document.body.classList.add("admin-mode");
-          document.getElementById("admin-banner").classList.add("show");
-          closeModal("login-modal");
-          showToast("Admin mode active");
-          renderPapers();
-        } else {
+        document.getElementById("login-msg").innerHTML = "";
+        try {
+          const res = await fetch("/api/admin-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pass }),
+          });
+          const j = await res.json().catch(() => ({}));
+          if (res.ok && j.ok) {
+            isAdmin = true;
+            document.body.classList.add("admin-mode");
+            document.getElementById("admin-banner").classList.add("show");
+            closeModal("login-modal");
+            showToast("Admin mode active");
+            renderPapers();
+          } else {
+            document.getElementById("login-msg").innerHTML =
+              '<div class="msg error">Incorrect password</div>';
+          }
+        } catch (e) {
+          console.error("Login error", e);
           document.getElementById("login-msg").innerHTML =
-            '<div class="msg error">Incorrect password</div>';
+            '<div class="msg error">Login failed — try again</div>';
         }
       }
 
