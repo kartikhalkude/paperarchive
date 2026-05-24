@@ -2,6 +2,7 @@
       // CONFIGURATION — Loaded from .env via Vite
       // ══════════════════════════════════════════════
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
       const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
       const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -10,6 +11,8 @@
       let isAdmin = false;
       let activeYear = "All";
       const YEARS = ["All", "SE", "TE", "BE"];
+      let activePattern = "All";
+      const PATTERNS = ["All", "2024 Pattern", "2019 Pattern", "2015 Pattern"];
       let activeType = "All";
       const TYPES = ["All", "Paper", "Study Material"];
 
@@ -213,6 +216,13 @@
 
       // ── FILTERS ──
       function buildFilters() {
+        const patternContainer = document.getElementById("pattern-filters");
+        if (patternContainer) {
+          patternContainer.innerHTML = PATTERNS.map(
+            (p) => `<button class="filter-tab ${p === activePattern ? "active" : ""}" onclick="setPatternFilter('${p}')">${p}</button>`
+          ).join("");
+        }
+
         document.getElementById("year-filters").innerHTML = YEARS.map(
           (y) =>
             `<button class="filter-tab ${y === activeYear ? "active" : ""}" onclick="setFilter('${y}')">${y}</button>`,
@@ -221,6 +231,12 @@
           (t) =>
             `<button class="filter-tab ${t === activeType ? "active" : ""}" onclick="setTypeFilter('${t}')">${t}</button>`,
         ).join("");
+      }
+
+      function setPatternFilter(val) {
+        activePattern = val;
+        buildFilters();
+        renderPapers();
       }
 
       function setFilter(val) {
@@ -243,6 +259,22 @@
           if (activeYear !== "All" && p.year !== activeYear) return false;
           if (activeType !== "All" && (p.type || "Paper") !== activeType)
             return false;
+            
+          if (activePattern !== "All") {
+            let pPattern = p.pattern;
+            if (!pPattern) {
+              if (p.title?.includes("2024") || p.subject?.includes("2024")) pPattern = "2024 Pattern";
+              else if (p.title?.includes("2019") || p.subject?.includes("2019")) pPattern = "2019 Pattern";
+              else if (p.title?.includes("2015") || p.subject?.includes("2015")) pPattern = "2015 Pattern";
+              else {
+                if (p.semester === "3" || p.semester === "4") pPattern = "2024 Pattern";
+                else if (p.semester >= "5") pPattern = "2019 Pattern";
+                else pPattern = "2019 Pattern"; 
+              }
+            }
+            if (pPattern !== activePattern) return false;
+          }
+
           if (
             q &&
             !`${p.title} ${p.subject} ${p.year} ${p.type || "Paper"}`
@@ -954,15 +986,15 @@
         runAutoExtract,
         closeModal,
         setFilter,
+        setPatternFilter,
         setTypeFilter,
         deletePaper,
         viewFile,
         renderPapers,
         incrementViews,
       });
-    
-// Ads auto-load sidebars (no consent required)
-
+      
+      // Ads auto-load sidebars (no consent required)
       function loadSideAds() {
         const adUrl = createAdDataUrl();
         const left = document.getElementById("ad-left");
