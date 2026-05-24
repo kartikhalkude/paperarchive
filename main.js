@@ -432,10 +432,65 @@
     <div class="paper-actions">
       ${isAdmin ? `<span id="view-count-${p.id}" style="font-size:10px; color:var(--muted); margin-right:8px;" title="Total Views & Downloads">👁 ${p.views || 0}</span>` : ""}
       <a class="btn-action btn-view-sm" onclick="viewFile('${p.id}')" style="cursor:pointer">View</a>
-      <a class="btn-action btn-dl" href="${fileLink}" download="${esc(p.title)}" title="Download" onclick="incrementViews('${p.id}')">↓</a>
+      <button class="btn-action btn-dl" title="Download" onclick="downloadPaper('${p.id}')">↓</button>
       <button class="btn-del-row" onclick="deletePaper('${p.id}')" title="Delete">Delete</button>
     </div>
   </div>`;
+      }
+
+      async function downloadPaper(id) {
+        const p = PAPERS.find((x) => x.id === id);
+        if (!p) return;
+        const fileLink = p.file_data || p.file_url;
+        if (!fileLink) return showToast('No file available for download');
+
+        try {
+          incrementViews(id);
+
+          // Data URI -> convert and trigger download
+          if (fileLink.startsWith('data:')) {
+            const arr = fileLink.split(',');
+            const mime = (arr[0].match(/:(.*?);/) || [])[1] || 'application/octet-stream';
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            const blob = new Blob([u8arr], { type: mime });
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = p.title ? p.title.replace(/[^a-z0-9\.\-\_ ]/gi, '_') + '.pdf' : 'file.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+            return;
+          }
+
+          // Try fetching the file (handles cross-origin if allowed)
+          try {
+            const res = await fetch(fileLink, { method: 'GET' });
+            if (!res.ok) throw new Error('Network response was not ok');
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = p.title ? p.title.replace(/[^a-z0-9\.\-\_ ]/gi, '_') + '.pdf' : 'file.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+            return;
+          } catch (e) {
+            // Fallback: open in new tab (will let browser handle download/view)
+            console.warn('Fetch download failed, falling back to open:', e);
+            window.open(fileLink, '_blank');
+            return;
+          }
+        } catch (err) {
+          console.error('Download error', err);
+          alert('Could not download file.');
+        }
       }
 
       function incrementViews(id) {
@@ -1082,6 +1137,7 @@
         setTypeFilter,
         deletePaper,
         viewFile,
+        downloadPaper,
         renderPapers,
         incrementViews,
       });
