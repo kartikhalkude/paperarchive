@@ -961,8 +961,7 @@
         incrementViews,
       });
     
-// Ads auto-load sidebars
- (no consent required)
+// Ads auto-load sidebars (no consent required)
 
       function loadSideAds() {
         const adUrl = createAdDataUrl();
