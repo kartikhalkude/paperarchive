@@ -122,8 +122,8 @@
         --border: #e8e5e0;
         --border-dark: #cfcbc4;
         --text: #111110;
-        --muted: #888580;
-        --faint: #c5c2bc;
+        --muted: #666360;
+        --faint: #a8a5a0;
         --accent: #111110;
         --accent-inv: #f9f8f6;
         --radius: 4px;
@@ -138,8 +138,8 @@
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.65;
       }
 
       /* ── HEADER ── */
@@ -332,37 +332,47 @@
 
       .search-wrap {
         position: relative;
-        max-width: 400px;
+        max-width: 580px;
+        width: 100%;
       }
 
-      .search-prefix {
+      .search-icon {
         position: absolute;
-        left: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--faint);
-        font-size: 12px;
+        width: 16px;
+        height: 16px;
         pointer-events: none;
+        color: var(--muted);
+        flex-shrink: 0;
       }
 
       .search-input {
         width: 100%;
-        padding: 9px 12px 9px 36px;
-        border: 1px solid var(--border);
+        padding: 13px 44px 13px 16px;
+        border: 1.5px solid var(--border-dark);
         background: var(--surface);
         font-family: "Geist Mono", monospace;
-        font-size: 12px;
+        font-size: 13.5px;
         color: var(--text);
-        border-radius: var(--radius);
+        border-radius: 8px;
         outline: none;
-        transition: border-color 0.15s;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        caret-color: var(--text);
       }
 
       .search-input::placeholder {
         color: var(--faint);
+        font-style: italic;
+      }
+      .search-input:hover {
+        border-color: var(--muted);
       }
       .search-input:focus {
         border-color: var(--text);
+        box-shadow: 0 0 0 3px rgba(17,17,16,0.08), 0 2px 8px rgba(0,0,0,0.05);
       }
 
       /* ── FILTERS ── */
@@ -464,13 +474,13 @@
 
       .subject-name {
         font-family: "Instrument Serif", serif;
-        font-size: 1rem;
+        font-size: 1.1rem;
         font-weight: 400;
       }
 
       .subject-tally {
-        font-size: 10px;
-        color: var(--faint);
+        font-size: 11px;
+        color: var(--muted);
         letter-spacing: 0.06em;
       }
 
@@ -511,20 +521,21 @@
       }
 
       .paper-year-badge {
-        font-size: 10px;
+        font-size: 11px;
         color: var(--muted);
-        border: 1px solid var(--border);
-        padding: 1px 6px;
+        border: 1px solid var(--border-dark);
+        padding: 2px 7px;
         border-radius: 2px;
         flex-shrink: 0;
         letter-spacing: 0.04em;
       }
 
       .paper-title {
-        font-size: 12px;
+        font-size: 13px;
         color: var(--text);
         white-space: normal;
         word-break: break-word;
+        font-weight: 400;
       }
 
       .paper-actions {
@@ -535,8 +546,8 @@
 
       .btn-action {
         font-family: "Geist Mono", monospace;
-        font-size: 11px;
-        padding: 4px 10px;
+        font-size: 12px;
+        padding: 5px 12px;
         border-radius: 2px;
         cursor: pointer;
         text-decoration: none;
@@ -811,6 +822,134 @@
         transform: translateY(0);
         opacity: 1;
       }
+
+      /* ── FILTER STRIP ── */
+      #filter-strip {
+        position: sticky;
+        top: 52px; /* header height */
+        z-index: 99;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+      }
+
+      @media (max-width: 600px) {
+        #filter-strip {
+          top: 48px;
+          padding: 0 1rem;
+        }
+      }
+
+      .filter-strip-inner {
+        max-width: 1000px;
+        margin: 0 auto;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .fs-label {
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--faint);
+        white-space: nowrap;
+        margin-right: 0.25rem;
+      }
+
+      .fs-divider {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
+
+      .fs-select {
+        font-family: "Geist Mono", monospace;
+        font-size: 11.5px;
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 4px 28px 4px 8px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.15s;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888580'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        min-width: 90px;
+      }
+
+      .fs-select:focus,
+      .fs-select:hover {
+        border-color: var(--border-dark);
+      }
+
+      .fs-count {
+        margin-left: auto;
+        font-size: 10.5px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 600px) {
+        .fs-label { display: none; }
+
+        .filter-strip-inner {
+          flex-direction: column;
+          align-items: stretch;
+          height: auto;
+          gap: 0;
+          padding: 0.25rem 0;
+        }
+
+        .fs-select {
+          width: 100%;
+          min-width: 0;
+          font-size: 12px;
+          padding: 9px 28px 9px 10px;
+          border: none;
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+          background-color: var(--bg);
+        }
+
+        .fs-select:last-of-type {
+          border-bottom: none;
+        }
+
+        .fs-divider { display: none; }
+
+        .fs-count { display: none; }
+      }
+
+      /* ── HEADER RESPONSIVE ── */
+      @media (max-width: 600px) {
+        header { padding: 0 1rem; }
+
+        .header-inner { height: 48px; }
+
+        .logo-dot,
+        .logo-year { display: none; }
+
+        .logo-title { font-size: 1rem; }
+
+        .header-right { gap: 0.5rem; }
+
+        .count-chip { display: none; }
+
+        .btn-text {
+          font-size: 10px;
+          padding: 4px 8px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .btn-text[onclick="openAdmin()"] { display: none; }
+      }
     </style>
   </head>
   <body>
@@ -843,6 +982,44 @@
       </div>
     </header>
 
+    <!-- FILTER STRIP (sticky below header) -->
+    <div id="filter-strip">
+      <div class="filter-strip-inner">
+        <span class="fs-label">Filter</span>
+
+        <select class="fs-select" id="ob-pattern" title="Pattern">
+          <option value="All">All Patterns</option>
+          <option value="2024 Pattern">2024 Pattern</option>
+          <option value="2019 Pattern">2019 Pattern</option>
+        </select>
+
+        <div class="fs-divider"></div>
+
+        <select class="fs-select" id="ob-year" title="Academic Year">
+          <option value="All">All Years</option>
+          <option value="SE">SE — 2nd Year</option>
+          <option value="TE">TE — 3rd Year</option>
+          <option value="BE">BE — Final Year</option>
+        </select>
+
+        <div class="fs-divider"></div>
+
+        <select class="fs-select" id="ob-sem" title="Semester">
+          <option value="All">All Sems</option>
+        </select>
+
+        <div class="fs-divider"></div>
+
+        <select class="fs-select" id="ob-type" title="Content Type">
+          <option value="All">All Types</option>
+          <option value="Paper">Papers</option>
+          <option value="Study Material">Study Material</option>
+        </select>
+
+        <span class="fs-count" id="fs-count"></span>
+      </div>
+    </div>
+
     <div class="admin-banner" id="admin-banner">
       <span>Admin mode active</span>
       <button onclick="openAutoExtract()">⚡ Auto-Extract PDF</button>
@@ -854,7 +1031,6 @@
       <p class="hero-label">SPPU IT Department • Repository</p>
       <h1>SPPU BE IT<br /><em>Previous Year PYQs</em></h1>
       <div class="search-wrap">
-        <span class="search-prefix">⌕</span>
         <input
           class="search-input"
           type="text"
@@ -864,6 +1040,10 @@
           autocomplete="off"
           spellcheck="false"
         />
+        <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="9" r="5.5"/>
+          <line x1="13.5" y1="13.5" x2="17" y2="17"/>
+        </svg>
       </div>
 
       <div
@@ -935,16 +1115,11 @@
       </div>
     </div>
 
-    <div class="filters-bar" id="filters-bar">
-      <div class="filters-inner">
-        <div id="pattern-filters" style="display: flex; gap: 4px"></div>
-        <div class="filter-divider"></div>
-        <div id="year-filters" style="display: flex; gap: 4px"></div>
-        <div class="filter-divider"></div>
-        <div id="type-filters" style="display: flex; gap: 4px"></div>
-        <span class="results-label" id="results-count" style="margin-left: auto; padding-left: 1rem;"></span>
-      </div>
-    </div>
+    <!-- hidden anchors so buildFilters() / renderPapers() don't throw -->
+    <span id="results-count" style="display:none"></span>
+    <div id="pattern-filters" style="display:none"></div>
+    <div id="year-filters"   style="display:none"></div>
+    <div id="type-filters"   style="display:none"></div>
 
     <main id="main-content"></main>
 

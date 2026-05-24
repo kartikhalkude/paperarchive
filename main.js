@@ -185,8 +185,96 @@
         },
       };
 
+      // ── FILTER STRIP ──
+
+      // Map each year to its semesters
+      const SEM_MAP = {
+        All: [
+          { val: "All", label: "All Sems" },
+          { val: "3",   label: "Sem 3" },
+          { val: "4",   label: "Sem 4" },
+          { val: "5",   label: "Sem 5" },
+          { val: "6",   label: "Sem 6" },
+          { val: "7",   label: "Sem 7" },
+          { val: "8",   label: "Sem 8" },
+        ],
+        SE: [
+          { val: "All", label: "Both Sems" },
+          { val: "3",   label: "Sem 3" },
+          { val: "4",   label: "Sem 4" },
+        ],
+        TE: [
+          { val: "All", label: "Both Sems" },
+          { val: "5",   label: "Sem 5" },
+          { val: "6",   label: "Sem 6" },
+        ],
+        BE: [
+          { val: "All", label: "Both Sems" },
+          { val: "7",   label: "Sem 7" },
+          { val: "8",   label: "Sem 8" },
+        ],
+      };
+
+      function updateSemOptions(year, currentSem) {
+        const sel = document.getElementById("ob-sem");
+        const options = SEM_MAP[year] || SEM_MAP["All"];
+        sel.innerHTML = options
+          .map(o => `<option value="${o.val}">${o.label}</option>`)
+          .join("");
+        // Keep the saved sem if it exists in the new options, else reset to "All"
+        const valid = options.some(o => o.val === currentSem);
+        sel.value = valid ? currentSem : "All";
+        return sel.value;
+      }
+
+      function applyStripFilters() {
+        activePattern = document.getElementById("ob-pattern").value;
+        activeYear    = document.getElementById("ob-year").value;
+        activeType    = document.getElementById("ob-type").value;
+        window._obSem = document.getElementById("ob-sem").value;
+
+        // Persist
+        localStorage.setItem("ob_pattern", activePattern);
+        localStorage.setItem("ob_year",    activeYear);
+        localStorage.setItem("ob_sem",     window._obSem);
+        localStorage.setItem("ob_type",    activeType);
+
+        buildFilters();
+        renderPapers();
+      }
+
+      function onYearChange() {
+        const year = document.getElementById("ob-year").value;
+        const currentSem = document.getElementById("ob-sem").value;
+        updateSemOptions(year, currentSem);
+        applyStripFilters();
+      }
+
       // ── INIT ──
       document.addEventListener("DOMContentLoaded", () => {
+        // Restore saved filter values into the strip dropdowns
+        const savedPattern = localStorage.getItem("ob_pattern") || "All";
+        const savedYear    = localStorage.getItem("ob_year")    || "All";
+        const savedSem     = localStorage.getItem("ob_sem")     || "All";
+        const savedType    = localStorage.getItem("ob_type")    || "All";
+
+        activePattern   = savedPattern;
+        activeYear      = savedYear;
+        activeType      = savedType;
+
+        document.getElementById("ob-pattern").value = savedPattern;
+        document.getElementById("ob-year").value    = savedYear;
+
+        // Populate semester options for the saved year, then restore saved sem
+        window._obSem = updateSemOptions(savedYear, savedSem);
+        document.getElementById("ob-type").value = savedType;
+
+        // Wire instant-apply listeners
+        document.getElementById("ob-pattern").addEventListener("change", applyStripFilters);
+        document.getElementById("ob-year").addEventListener("change",    onYearChange);
+        document.getElementById("ob-sem").addEventListener("change",     applyStripFilters);
+        document.getElementById("ob-type").addEventListener("change",    applyStripFilters);
+
         buildFilters();
         fetchPapers();
       });
@@ -259,6 +347,10 @@
           if (activeYear !== "All" && p.year !== activeYear) return false;
           if (activeType !== "All" && (p.type || "Paper") !== activeType)
             return false;
+
+          // Semester filter from onboarding
+          const obSem = window._obSem || "All";
+          if (obSem !== "All" && p.semester !== obSem) return false;
             
           if (activePattern !== "All") {
             let pPattern = p.pattern;
